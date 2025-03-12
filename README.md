@@ -1,6 +1,6 @@
 # QNLib: Quantum Nanoelectronics Laboratory Library
 
-QNLib is a Python package for simulating and benchmarking qudit (d-dimensional quantum) systems, with a focus on qutrits (3-dimensional quantum systems). Built on top of Google's Cirq framework, it provides tools for quantum circuit generation, noise modeling, and randomized benchmarking.
+QNLib is a Python package for working with qudit (d-dimensional quantum) systems. Built on top of Google's Cirq framework, it provides tools for quantum circuit generation, noise modeling, and randomized benchmarking.
 
 ## Installation
 
