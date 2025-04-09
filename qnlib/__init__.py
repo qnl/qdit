@@ -46,6 +46,7 @@ __all__ = [
     "RandomizedBenchmarkingResult",
     "single_qutrit_randomized_benchmarking",
     "RandomCompiling",
+    "CircuitDecomposer",
     
     # Examples and demos
     "example_qutrit_clifford_usage",

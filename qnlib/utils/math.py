@@ -74,7 +74,7 @@ def efficient_inverse(mat):
     return result
 
 def is_commuting(a, b):
-    return is_identity(a @ b @ unitary_inverse(a) @ unitary_inverse(b))
+    return is_identity(a @ b @ hermitian(a) @ hermitian(b))
 
 def is_anticommuting(self, A: np.ndarray, B: np.ndarray, rtol: float = 1e-10, atol: float = 1e-10) -> bool:
         """
@@ -129,7 +129,7 @@ def is_identity(test_mat):
         imag_close = np.allclose(np.abs(test_mat.imag), np.zeros_like(identity), rtol=1e-5, atol=1e-5)
         return real_close and imag_close
 
-def unitary_inverse(mat):
+def hermitian(mat):
     return np.conjugate(mat.T)
 
 def check_pauli_relation(pvec0, pvec1, d: int, non_commute: int=None):
@@ -228,3 +228,43 @@ def verify_phase_relationship(mat1: np.ndarray, mat2: np.ndarray, tol: float = 1
     is_phase_related = all(abs(r - reference) < tol for r in ratios)
     
     return is_phase_related, reference if is_phase_related else None
+
+def unitary_to_special_unitary(U):
+    """
+    Convert a unitary matrix U ∈ U(N) to a special unitary matrix ∈ SU(N).
+    
+    Parameters:
+    -----------
+    U : numpy.ndarray
+        A unitary matrix (U†U = UU† = I) of shape (N, N)
+    dtype : type
+        
+    Returns:
+    --------
+    numpy.ndarray
+        A special unitary matrix (determinant = 1) of the same shape
+    """
+    # Check if the input is approximately unitary
+    N = U.shape[0]
+    if not np.allclose(U @ U.conj().T, np.eye(N), atol=1e-10):
+        raise ValueError("Input matrix is not unitary")
+    
+    # Calculate the determinant (which should have magnitude 1 for unitary matrices)
+    det_U = np.linalg.det(np.array(U, dtype=np.complex128))
+    
+    # Calculate the phase of the determinant
+    # For a unitary matrix, det(U) = e^(iθ) for some θ
+    theta = np.angle(det_U)
+    
+    # Create the correction factor: e^(-iθ/N)
+    correction = np.exp(-1j * theta / N, dtype=np.complex128)
+    
+    # Apply the correction to get a special unitary matrix
+    U_special = correction * U
+    
+    # Verify the determinant is now ~1
+    new_det = np.linalg.det(np.array(U_special, dtype=np.complex128))
+    if not np.isclose(new_det, 1.0, atol=1e-10):
+        raise RuntimeError(f"Failed to create special unitary matrix. New determinant: {new_det}")
+    
+    return U_special, correction

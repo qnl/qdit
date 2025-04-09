@@ -20,10 +20,8 @@ class PauliXGate(cirq.Gate):
         return 1
         
     def _unitary_(self) -> np.ndarray:
-        return np.array([[int((i + self.power) % self.d == j) 
-                         for i in range(self.d)] 
-                         for j in range(self.d)], 
-                         dtype=np.complex128)
+        _, X, _ = qudit_pauli_mats(self.d)
+        return X
     
     def _circuit_diagram_info_(self, args) -> str:
         if self.power == 1:
@@ -50,11 +48,8 @@ class PauliZGate(cirq.Gate):
         return 1
         
     def _unitary_(self) -> np.ndarray:
-        w = np.exp(2j * np.pi / self.d)
-        return np.array([[np.power(w, i * self.power) * int(i == j) 
-                         for i in range(self.d)] 
-                         for j in range(self.d)], 
-                         dtype=np.complex128)
+        _, _, Z = qudit_pauli_mats(self.d)
+        return Z
     
     def _circuit_diagram_info_(self, args) -> str:
         if self.power == 1:
@@ -82,13 +77,13 @@ class PauliYGate(cirq.Gate):
         
     def _unitary_(self) -> np.ndarray:
         # Get X and Z matrices
-        _, X, Z = qudit_pauli_mats(self.d)
+        w_til, X, Z = qudit_pauli_mats(self.d)
         
         # Phase factor tau
-        tau = np.power(-1, self.d) * np.exp(np.pi * 1j / self.d)
+        tau = np.power(w_til, 1/2, dtype=np.clongdouble)
         
         # Compute Y = tau * X^dagger * Z^dagger
-        Y = tau * X.conj().T @ Z.conj().T
+        Y = X.conj().T @ tau @ Z.conj().T
         
         # Return the requested power of Y
         return np.linalg.matrix_power(Y, self.power)

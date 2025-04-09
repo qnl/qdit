@@ -12,6 +12,8 @@
 #  
 
 import numpy as np
+from numpy.linalg import det
+import math
 
 def su2_parameters(U):
     """ Given a matrix in SU(2), parametrized as 
@@ -22,22 +24,21 @@ def su2_parameters(U):
     if U.shape != (2, 2):
         print("Error, matrix dimensions of su2_parameters must be 2x2.")
         return
-    # if not np.isclose(np.linalg.det(U), 1):
-    #     print("Error, matrix must have determinant 1 to be decomposed into SU(2) parameters.")
-    #     return
+    assert np.isclose(det(U), 1, atol=1e-3), \
+        f"Error, matrix must have det 1 to be decomposed into SU(2) parameters but det({U}) = {det(U)}."
 
     # Sometimes the absolute value of the matrix entry is very, very close to
     # 1 and slightly above, when it should be 1 exactly. Isolate these cases
     # to prevent us from getting NaN.
     b = None
     if np.isclose(np.absolute(U[0, 1]), 1):
-        b = 2 * np.arcsin(1)
+        b = 2 * np.arcsin(1, dtype=np.complex128)
     else:
-        b = 2 * np.arcsin(np.absolute(U[0, 1]))
+        b = 2 * np.arcsin(np.absolute(U[0, 1]), dtype=np.complex128)
 
     arg_pos = np.angle(U[0, 0]) #(a + g)/2
     arg_neg = -np.angle(U[1, 0]) #(a - g)/2
-    a, g = arg_pos + arg_neg, arg_pos - arg_neg
+    a, g = math.fsum([arg_pos, arg_neg]), math.fsum([arg_pos, -arg_neg])
     return [a, b, g]
 
 
@@ -62,9 +63,7 @@ def su3_parameters(U):
     if U.shape != (3, 3):                                                       
         print("Error, matrix dimensions of su3_parameters must be 3x3.")        
         return
-    # if not np.isclose(np.linalg.det(U), 1):                                     
-    #     print("Error, matrix must have determinant 1 to be decomposed into SU(2) parameters.")
-    #     return
+    assert np.isclose(det(U), 1), f"Error, matrix must have det 1 to be decomposed into SU(2) parameters but det({U}) = {det(U)}."
 
     # Grab the entries of the first row
     x, y, z = U[0,0], U[1,0], U[2,0]
@@ -85,13 +84,14 @@ def su3_parameters(U):
         full_phase_su2[0:2, 0:2] = phase_su2
 
         # Compute what's left of the product, and the parameters
-        running_product = full_phase_su2 * U
+        running_product = accurate_mat_mul(full_phase_su2, U)
+        
         remainder_su2 = running_product[1:, 1:]
 
         return [[0., 0., 0.], su2_parameters(phase_su2.getH()), su2_parameters(remainder_su2)]
 
     # Typical case
-    cf = np.sqrt(1 - pow(np.absolute(x), 2))
+    cf = np.sqrt(1 - pow(np.absolute(x), 2), dtype=np.complex128)
     capY, capZ = y / cf, z / cf 
 
     # Build the SU(2) transformation matrices
@@ -104,7 +104,7 @@ def su3_parameters(U):
     # SU_12(2) - only two parameters
     middle = np.matrix([[x, -cf, 0],
                         [cf, np.conj(x), 0],
-                        [0, 0, 1]])
+                        [0, 0, 1]], dtype=np.complex128)
     middle_params = su2_parameters(middle[0:2, 0:2])
 
     # SU_23(3) - again three parameters
@@ -113,6 +113,12 @@ def su3_parameters(U):
 
     return [left_params, middle_params, right_params]
 
+def accurate_mat_mul(A, B):
+    prod = np.array([[complex(math.fsum([np.real(A[i,k] * B[k,j]) for k in range(A.shape[1])]), 
+                        math.fsum([np.imag(A[i,k] * B[k,j]) for k in range(A.shape[1])]))
+                for j in range(B.shape[1])]
+                for i in range(A.shape[0])], dtype=np.complex128)
+    return np.matrix(prod)
 
 def build_staircase(U):
     """ Take a matrix in SU(n) and find the staircase of SU(2)
@@ -132,7 +138,6 @@ def build_staircase(U):
     # There are a number of special cases to consider which occur when the
     # left-most column contains all 0s except for one entry.
     moduli = [np.abs(U[x, 0]) for x in range(n)]
-    # print(sorted(moduli))
     if np.allclose(sorted(moduli), [0.] * (n - 1) + [1]): 
         # In the special case where the top-most entry is a 1, or within some
         # small tolerance of it, we basically already have an SU(n-1) transformation
@@ -144,17 +149,18 @@ def build_staircase(U):
         elif np.isclose(np.abs(running_prod[0, 0]), 1):
             # "Phase shift" by applying an SU(2) transformation to cancel out the
             # top-most phase. Do nothing to everything else.
-            phase_su2 = np.matrix([[np.conj(running_prod[0, 0]), 0], [0, running_prod[0, 0]]], dtype=np.clongdouble)
+            phase_su2 = np.matrix([[np.conj(running_prod[0, 0]), 0], [0, running_prod[0, 0]]])
             transformations = [[0., 0., 0.]] * (n - 2) + [su2_parameters(phase_su2.getH())]
 
-            full_phase_su2 = np.asmatrix(np.identity(n), dtype=np.clongdouble) + np.clongdouble(0j)
+            full_phase_su2 = np.asmatrix(np.identity(n)) + 0j
             full_phase_su2[0:2, 0:2] = phase_su2
-            running_prod = full_phase_su2 * running_prod
+            running_prod = accurate_mat_mul(full_phase_su2,running_prod)
+            
         else:
             # If the non-zero entry is lower down, permute until it
             # reaches the top and then apply a phase transformation.
             for rot_idx in range(n - 1, 0, -1):
-                if running_prod[rot_idx, 0] != 0:
+                if np.round(running_prod[rot_idx, 0], 10) != 0:
                     permmat = np.matrix([[0, -1], [1, 0]])
                 
                     full_permmat = np.asmatrix(np.identity(n)) + 0j
@@ -170,7 +176,7 @@ def build_staircase(U):
                     full_trans = np.asmatrix(np.identity(n)) + 0j
                     full_trans[rot_idx-1:rot_idx+1, rot_idx-1:rot_idx+1] = permmat 
                         
-                    running_prod = full_trans * running_prod
+                    running_prod = accurate_mat_mul(full_trans, running_prod)
 
                 else: # Otherwise do nothing between these modes
                     transformations.append([0, 0, 0])
@@ -184,36 +190,41 @@ def build_staircase(U):
             Rij_inv = np.asmatrix(np.identity(2)) + 0j
             full_Rij_inv = np.asmatrix(np.identity(n)) + 0j
 
+            # Skip if entry is already 0 (within numerical precision)
+            if np.isclose(running_prod[j, 0], 0):
+                transformations.append([0., 0., 0.])
+                continue
+
             if rot_idx != n - 2:
+                
                 # The denominator of the transformation is the difference of
                 # absolute values of all columns *up* to this point.
                 sum_of_column = 0
                 for k in range(i):
-                    sum_of_column += np.power(np.absolute(running_prod[k,0]), 2, dtype=np.clongdouble)
-                    # if sum_of_column>=1: print(np.absolute(running_prod[k,0]), pow(np.absolute(running_prod[k,0]), 2))
-                cf = np.sqrt(1 - sum_of_column, dtype=np.clongdouble)
+                    sum_of_column += pow(np.absolute(running_prod[k,0]), 2)
 
+                cf = np.sqrt(1 - sum_of_column)
                 y, z = running_prod[i, 0], running_prod[j, 0] 
                 capY, capZ  = y / cf, z / cf 
 
                 # Build the SU(2) transformation and embed it into the larger matrix
                 Rij_inv = np.matrix([[np.conj(capY), np.conj(capZ)], 
-                                     [-capZ, capY]], dtype=np.clongdouble)
+                                        [-capZ, capY]])
             else: 
                 # The last transformation, R12 is special and the rotation has
                 # a different form
-                x = U[0,0]
-                cf = np.sqrt(1 - np.power(np.absolute(x), 2, dtype=np.clongdouble), dtype=np.clongdouble)
-                Rij_inv = np.matrix([[np.conj(x), cf], 
-                                     [-cf, x]])
+                x = running_prod[0,0]
+                y = running_prod[1,0]
+                Rij_inv = np.matrix([[np.conj(x), np.conj(y)], 
+                                    [-y, x]])
 
             # Add the transformation to the sequence and update the product
             Rij = Rij_inv.getH()
-            transformations.append(su2_parameters(Rij))
-
             # Embed into larger space
             full_Rij_inv[i:j+1, i:j+1] = Rij_inv
-            running_prod = full_Rij_inv * running_prod
+            # Use math.fsum for more accurate matrix multiplication
+            running_prod = accurate_mat_mul(full_Rij_inv, running_prod)
+            transformations.append(su2_parameters(Rij))
 
     return transformations, running_prod
 
@@ -236,6 +247,7 @@ def sun_parameters(U):
         # All other cases we must build the staircase and repeat the
         # process on the resultant SU(n-1) transformation
         staircase_transformation, new_U = build_staircase(U)
+        assert np.isclose(new_U[0,0],1,rtol=1e-10), f"Error, matrix must have 1 in the top left corner to be decomposed into SU(2) parameters but U[0,0] = {U[0,0]}."
         Unm1 = new_U[1:,1:] # Grab the lower chunk of the matrix
         return staircase_transformation + sun_parameters(Unm1) 
 
@@ -250,19 +262,17 @@ def sun_factorization(U):
         are its parameters.
     """
     # Check that the matrix has the proper form, i.e. it is unitary and
-    # it has determinant 1.
+    # it has det 1.
     n = U.shape[0]
 
-    if n < 3:
-        print("Error, matrix for decomposition must be at least 3x3.")
+    if n == 2: 
+        print("Matrix is already decomposed")
+        return U
+    
+    assert n > 3, f"Error, matrix for decomposition must be at least 3x3 but has dim {n}."
 
-    # if not np.isclose(np.linalg.det(U), 1):                           
-    #     print("Error, matrix must have determinant 1.")
-    #     return None
-
-    if not np.allclose(U * U.getH(), np.eye(n)):
-        print("Error, matrix must be unitary with determinant 1.")
-        return None
+    assert np.isclose(det(U), 1), f"Error, matrix must have det 1 to be decomposed into SU(2) parameters. det: {det(U)}"
+    assert np.allclose(U * U.getH(), np.eye(n)), "Error, matrix must be unitary."
 
     # Decompose the matrix
     parameters_no_modes = sun_parameters(U)

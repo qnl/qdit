@@ -1,0 +1,4 @@
+numpy
+cirq
+matplotlib
+tqdm

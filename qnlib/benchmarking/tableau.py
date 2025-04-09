@@ -272,11 +272,17 @@ class Tableau:
     
     def clear_row(self, row):
         """Clear specified row of Z"""
+        # Iterate through qudits starting from the reduction index
         for i in range(self.nq-self.reduction_qudit_idx):
+            # Get X and Z components for current qudit
             x,z=self.xtab[row][i+self.reduction_qudit_idx],self.ztab[row][i+self.reduction_qudit_idx]
+            
+            # If X component is 0, apply Fourier transform to swap X and Z
             if x==0:
                 self.apply_F_operation(i+self.reduction_qudit_idx)
             else:
+            # While Z component is non-zero, apply phase gates
+            # This adds X to Z component until Z becomes 0
                 while z!=0:
                     z=(z+x)%self.d
                     self.apply_S_operation(i+self.reduction_qudit_idx)
@@ -284,15 +290,27 @@ class Tableau:
 
     def reduce_x_entries(self, row):
         """Reduce X entries to a single non-zero entry"""
+        # Find indices where X entries are non-zero
         J = [j for j, x in enumerate(self.xtab[row]) if x!=0]
+        
+        # Continue reducing until only one non-zero X entry remains
         while len(J)>1:
+            # Process pairs of non-zero entries
             for i in range(len(J)):
+                # For even indices that have a following entry
                 if i%2==0 and i+1<len(J):
+                    # Get the X value at the target qudit
                     target_value = self.xtab[row][J[i+1]]
+                    
+                    # Keep applying CNOT until target X entry becomes 0
                     while target_value!=0:
                         target_value = (target_value+self.xtab[row][J[i]])%self.d
                         self.apply_CNOT_operation(J[i], J[i+1])
+                    
+                    # Remove the cleared entry from our list
                     J.remove(J[i+1])
+        
+        # Return list containing index of remaining non-zero X entry
         return J
     
     def swap(self, i: int, j: int):
@@ -341,18 +359,26 @@ class Tableau:
             self.print()
             print('Sweeping...')
             print('Step 1:')
+
+        # Step 1: Clear first row
         self.clear_row(self.row1_idx)
         if display: 
             self.print()
             print('Step 2:')
+
+        # Step 2: Reduce X entries in first row
         J = self.reduce_x_entries(self.row1_idx)
         if display: self.print()
+
+        # Step 3: Swap qubits if needed
         if J[0]!=self.reduction_qudit_idx:
             if display: print(f'Step 3: Swapping qubit {J[0]} with qubit {self.reduction_qudit_idx}')
             self.swap(J[0], self.reduction_qudit_idx)
             if display: self.print()
         else: 
             if display: print(f'Step 3: skipped')
+
+        # Step 4: Process second row
         if display: print('Step 4: Repeat for second row')
         # Check if second pauli is not Z at reduction qubit site
         if np.any(self.xtab[self.row2_idx]) or \
@@ -360,16 +386,22 @@ class Tableau:
            np.any(self.ztab[self.row2_idx][self.reduction_qudit_idx+1:]) or \
            self.ztab[self.row2_idx][self.reduction_qudit_idx] == 0:
             if display: self.print()
+            # Apply Fourier transform
             self.apply_F_operation(self.reduction_qudit_idx)
             if display: self.print()
+            # Clear second row
             self.clear_row(self.row2_idx)
             if display: self.print()
+            # Reduce X entries
             self.reduce_x_entries(self.row2_idx)
             if display: self.print()
+            # Apply inverse Fourier transform
             self.apply_F_operation(self.reduction_qudit_idx)
             if display: self.print()
         else: 
             if display: print('Step 4: skipped')
+
+        # Step 5: Normalize Pauli operators if needed
         if self.xtab[self.row1_idx][self.reduction_qudit_idx]==1 and self.ztab[self.row2_idx][self.reduction_qudit_idx]==1:
             if display: print('Step 5: skipped')
         while self.xtab[self.row1_idx][self.reduction_qudit_idx]!=1 and self.ztab[self.row2_idx][self.reduction_qudit_idx]!=1:
@@ -377,6 +409,8 @@ class Tableau:
             if display: print(f'Step 5a: Reducing qudit Z pauli from {self.ztab[self.row2_idx][self.reduction_qudit_idx]} --> 1')
             self.apply_M_operation(self.reduction_qudit_idx, self.ztab[self.row2_idx][self.reduction_qudit_idx])
             if display: self.print()
+
+        # Step 6: Clear sign bits
         if display: print('Clearing Signs...')
         self.clear_signs()
         return

@@ -121,7 +121,7 @@ def clifford_generator_mats(d: int, canonical: bool = False) -> tuple:
         return NotImplementedError
         
     # Phase factor τ = exp(2πi(d^2+1)/d)
-    tau = np.exp(1j*np.pi*(d**2+1)/d, dtype=np.clongdouble)
+    tau = np.power(-1, d, dtype=np.clongdouble)*np.exp(1j*np.pi/d, dtype=np.clongdouble)
     
     # Fourier gate (generalized Hadamard)
     F = np.array([[np.power(tau,int(2*i*j), dtype=np.clongdouble)/np.sqrt(d, dtype=np.clongdouble) for i in range(d)] for j in range(d)], dtype=np.clongdouble)
