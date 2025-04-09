@@ -5,7 +5,7 @@ QNLib is a Python package for simulating and benchmarking qudit (d-dimensional q
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/qnlib.git
+git clone https://github.com/eliaslehman/qnlib.git
 cd qnlib
 pip install -e .
 ```
