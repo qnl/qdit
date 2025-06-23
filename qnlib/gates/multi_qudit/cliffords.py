@@ -113,7 +113,10 @@ class QuditCZGate(cirq.Gate):
     def _circuit_diagram_info_(self, args):
         if self.name:
             return f"{self.name}c", f"{self.name}t"
-        return f"CZ{self.control_idx}", f"CZ{self.target_idx}"
+        if self.control_idx > self.target_idx:
+            return f"CZ{self.control_idx}", f"CZ{self.target_idx}"
+        else:
+            return f"CZ{self.target_idx}", f"CZ{self.control_idx}"
         
     def __pow__(self, exponent: int) -> 'QuditCZGate':
         if not isinstance(exponent, int):
@@ -145,7 +148,10 @@ class QuditCXGate(cirq.Gate):
     def _circuit_diagram_info_(self, args):
         if self.name:
             return f"{self.name}c", f"{self.name}t"
-        return f"CX{self.control_idx}", f"CX{self.target_idx}"
+        if self.control_idx > self.target_idx:
+            return f"CX{self.control_idx}", f"CX{self.target_idx}"
+        else:
+            return f"CX{self.target_idx}", f"CX{self.control_idx}"
         
     def __pow__(self, exponent: int) -> 'QuditCXGate':
         """Returns the gate raised to a power.

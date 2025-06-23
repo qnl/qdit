@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from ..gates.paulis.utils import qudit_pauli_mats
+from ..gates.single_qudit.utils import qudit_pauli_mats
 
 def verify_clifford_group(matrices: List[np.ndarray], d: int = 3):
     """Verify that the generated matrices form a group and normalize the Pauli group.

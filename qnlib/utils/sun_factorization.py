@@ -269,7 +269,7 @@ def sun_factorization(U):
         print("Matrix is already decomposed")
         return U
     
-    assert n > 3, f"Error, matrix for decomposition must be at least 3x3 but has dim {n}."
+    assert n >= 3, f"Error, matrix for decomposition must be at least 3x3 but has dim {U.shape}."
 
     assert np.isclose(det(U), 1), f"Error, matrix must have det 1 to be decomposed into SU(2) parameters. det: {det(U)}"
     assert np.allclose(U * U.getH(), np.eye(n)), "Error, matrix must be unitary."

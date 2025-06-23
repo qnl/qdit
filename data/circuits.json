@@ -1,0 +1,11 @@
+[
+  [
+    {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": 

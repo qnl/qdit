@@ -4,18 +4,20 @@ from qnlib.noise import *
 from qnlib.utils.math import *
 from qnlib.benchmarking import *
 from qnlib.compiling import *
-from qnlib.gates.cliffords.quditCliffords import (
+from qnlib.gates.multi_qudit import (
     QuditFourierGate,
     QuditPhaseGate,
     QuditCZGate,
     QuditCXGate,
-    QuditMultiplicationGate
+    QuditMultiplicationGate,
+    H, S, CZ, CX
 )
-from qnlib.gates.paulis.quditPaulis import (
+from qnlib.gates.single_qudit import (
     PauliXGate,
     PauliYGate,
     PauliZGate,
-    WeylOperator
+    WeylOperator,
+    Rx, Ry, Rz
 )
 
 __version__ = "0.1.0"
@@ -26,20 +28,20 @@ __all__ = [
     "check_pauli_relation",
     "verify_clifford_group",
     
-    # Clifford gates
+    # Multi-qudit Clifford gates
     "QuditFourierGate",
     "QuditPhaseGate", 
     "QuditCZGate",
     "QuditCXGate",
     "QuditMultiplicationGate",
-    "QuditCliffordGates",
-    "single_qutrit_cliffords",
+    "H", "S", "CZ", "CX",
     
-    # Pauli gates
+    # Single-qudit gates
     "PauliXGate",
     "PauliYGate",
     "PauliZGate",
     "WeylOperator",
+    "Rx", "Ry", "Rz",
     
     # Benchmarking and compilation
     "Tableau",

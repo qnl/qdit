@@ -6,7 +6,7 @@ from scipy.optimize import curve_fit
 from tqdm.auto import tqdm
 import time
 import matplotlib.pyplot as plt
-from ..gates.cliffords.utils import single_qutrit_cliffords
+from ..gates.multi_qudit.utils import single_qutrit_cliffords
 from ..noise import *
 from .tableau import Tableau
 from ..gates.utils.convert import matrix_to_cirq_gate
@@ -78,10 +78,12 @@ class QuditBenchmarking:
                 circuit = Circuit()
                 for _ in range(depth):
                     if expanded:
-                        clifford = sample_clifford(self.num_qudits, self.dimension)
+                        clifford = sample_clifford(num_qudits=self.num_qudits, dimension=self.dimension)
                         circuit.append(clifford)
                     else:
-                        clifford_unitary = unitary(sample_clifford(self.num_qudits, self.dimension))
+                        clifford_unitary = unitary(sample_clifford(num_qudits=self.num_qudits, dimension=self.dimension))
+                        if(np.array(clifford_unitary).shape==(2,2)):
+                            print(clifford_unitary)
                         clifford = MatrixGate(matrix=clifford_unitary,
                                               qid_shape=(self.dimension, )*self.num_qudits,
                                               name=f'C{_}'

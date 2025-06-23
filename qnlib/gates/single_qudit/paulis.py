@@ -3,6 +3,29 @@ import numpy as np
 from typing import Sequence, Union, Tuple
 from .utils import qudit_pauli_mats
 
+class Id(cirq.Gate):
+    """Identity gate for a d-dimensional qudit."""
+    
+    def __init__(self, dimension: int):
+        """
+        Args:
+            dimension: Dimension of the qudit
+        """
+        super(Id, self)
+        self.d = dimension
+        
+    def _num_qubits_(self) -> int:
+        return 1
+        
+    def _unitary_(self) -> np.ndarray:
+        return np.eye(self.d, dtype=complex)
+    
+    def _circuit_diagram_info_(self, args) -> str:
+        return "I"
+    
+    def _qid_shape_(self) -> Tuple[int, ...]:
+        return (self.d,)
+
 class PauliXGate(cirq.Gate):
     """A d-dimensional Pauli X gate."""
     
@@ -21,12 +44,12 @@ class PauliXGate(cirq.Gate):
         
     def _unitary_(self) -> np.ndarray:
         _, X, _ = qudit_pauli_mats(self.d)
-        return X
+        return np.linalg.matrix_power(X,self.power)
     
     def _circuit_diagram_info_(self, args) -> str:
         if self.power == 1:
-            return f"X({self.d})"
-        return f"X{self.power}({self.d})"
+            return f"X"
+        return f"X{self.power}"
     
     def _qid_shape_(self) -> Tuple[int, ...]:
         return (self.d,)
@@ -49,12 +72,12 @@ class PauliZGate(cirq.Gate):
         
     def _unitary_(self) -> np.ndarray:
         _, _, Z = qudit_pauli_mats(self.d)
-        return Z
+        return np.linalg.matrix_power(Z,self.power)
     
     def _circuit_diagram_info_(self, args) -> str:
         if self.power == 1:
-            return f"Z({self.d})"
-        return f"Z{self.power}({self.d})"
+            return f"Z"
+        return f"Z{self.power}"
     
     def _qid_shape_(self) -> Tuple[int, ...]:
         return (self.d,)
@@ -90,8 +113,8 @@ class PauliYGate(cirq.Gate):
     
     def _circuit_diagram_info_(self, args) -> str:
         if self.power == 1:
-            return f"Y({self.d})"
-        return f"Y{self.power}({self.d})"
+            return f"Y"
+        return f"Y{self.power}"
     
     def _qid_shape_(self) -> Tuple[int, ...]:
         return (self.d,)
@@ -148,11 +171,11 @@ class WeylOperator(cirq.Gate):
         labels = []
         for i in range(self.nq):
             if self.a[i] == 0 and self.b[i] == 0:
-                labels.append(f"I({self.d})")
+                labels.append(f"I")
             elif self.b[i] == 0:
-                labels.append(f"X{self.a[i]}({self.d})")
+                labels.append(f"X{self.a[i]}")
             elif self.a[i] == 0:
-                labels.append(f"Z{self.b[i]}({self.d})")
+                labels.append(f"Z{self.b[i]}")
             else:
                 labels.append(f"W({self.a[i]},{self.b[i]})")
         return tuple(labels)

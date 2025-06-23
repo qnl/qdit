@@ -8,7 +8,7 @@ def test_tableau(num_tests: int = 50, num_qudits: int = 2, dim: int = 3, iters =
             assert (T.xtab[2*i][i] == T.ztab[2*i+1][i] == 1 and not (any(T.xtab[2*i][i+1:] + T.ztab[2*i+1][i+1:]))), (f'Error at {_}', T.xtab[2*i], T.ztab[2*i+1])
 
 ### Generating Symbolic Pauli Groups ###
-import qnlib.gates.paulis.utils as qcp
+import qnlib.gates.single_qudit.utils as qcp
 
 def test_qudit_pauli_group(nq=2, d=3, num_elements=10):
     """

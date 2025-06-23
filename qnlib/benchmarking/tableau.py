@@ -2,11 +2,21 @@ import numpy as np
 import itertools
 import cirq
 from typing import Optional, List
-from ..gates.paulis.utils import weyl
+from ..gates.single_qudit.utils import weyl
 from ..utils.math import check_pauli_relation, sympletic_product
-from ..gates.cliffords.quditCliffords import QuditFourierGate, QuditPhaseGate, QuditCXGate, QuditMultiplicationGate
-from ..gates.paulis.quditPaulis import PauliXGate, PauliZGate, PauliYGate
-
+from ..gates.single_qudit import (
+    PauliXGate, 
+    PauliYGate, 
+    PauliZGate,
+    WeylOperator
+)
+from ..utils.math import check_pauli_relation, sympletic_product
+from ..gates.multi_qudit import (
+    QuditFourierGate,
+    QuditPhaseGate,
+    QuditCXGate,
+    QuditMultiplicationGate
+)
 class Tableau:
     """A class representing a quantum tableau for tracking Pauli operators and Clifford operations.
     

@@ -1,4 +1,4 @@
-Metadata-Version: 2.2
+Metadata-Version: 2.1
 Name: qnlib
 Version: 0.1.0
 Summary: A package to support UC Berkeley's Quantum Nanoelectronics Laboratory
@@ -10,14 +10,3 @@ Classifier: Programming Language :: Python :: 3
 Classifier: Topic :: Scientific/Engineering :: Physics
 Requires-Python: >=3.7
 License-File: LICENSE
-Requires-Dist: numpy
-Requires-Dist: cirq
-Requires-Dist: matplotlib
-Requires-Dist: tqdm
-Dynamic: author
-Dynamic: author-email
-Dynamic: classifier
-Dynamic: license
-Dynamic: requires-dist
-Dynamic: requires-python
-Dynamic: summary
