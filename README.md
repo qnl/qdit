@@ -1,12 +1,12 @@
-# QNLib: Quantum Nanoelectronics Laboratory Library
+# Qdit: Quantum Nanoelectronics Laboratory Library
 
-QNLib is a Python package for working with qudit (d-dimensional quantum) systems. Built on top of Google's Cirq framework, it provides tools for quantum circuit generation, noise modeling, and randomized benchmarking.
+Qdit is a Python package for working with qudit (d-dimensional quantum) systems. Built on top of Google's Cirq framework, it provides tools for quantum circuit generation, noise modeling, and randomized benchmarking.
 
 ## Installation
 
 ```bash
-git clone https://github.com/qnl/qnlib.git
-cd qnlib
+git clone https://github.com/qnl/qdit.git
+cd qdit
 pip install -e .
 ```
 
@@ -31,7 +31,7 @@ pip install -e .
 ## Quick Start
 
 ```python
-from qnlib.benchmarking import QuditBenchmarking
+from qdit.benchmarking import QuditBenchmarking
 from cirq import Simulator
 
 # Create a 2-qutrit benchmarking instance
@@ -84,7 +84,7 @@ See `examples/qutrits_in_cirq.ipynb` for:
 
 ### Tableau Simulation
 ```python
-from qnlib.benchmarking import Tableau
+from qdit.benchmarking import Tableau
 
 # Generate random 2-qutrit Clifford circuit
 tableau = Tableau(num_qudits=2, dimension=3)
@@ -94,7 +94,7 @@ circuit = tableau.circuit
 
 ### Noise Channels
 ```python
-from qnlib.noise import AmplitudeDamping
+from qdit.noise import AmplitudeDamping
 
 # Create qutrit amplitude damping channel
 noise = AmplitudeDamping(
