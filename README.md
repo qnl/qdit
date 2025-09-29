@@ -10,23 +10,27 @@ cd qdit
 pip install -e .
 ```
 
-## Features
+## Features (with examples linked)
 
-### Qudit Gates
-- Complete set of qudit Clifford gates
-- Pauli operators for d-dimensional systems
-- Support for arbitrary unitary decomposition into SU(2) gates
+### [Qudit Gates](./qdit/gates/)
+- [Able to generate the complete set of n-qudit Clifford circuits](./examples/clifford_sampling.ipynb)
+- [Arbitrary single-qudit unitary decomposition into subspace rotations](./examples/single_qudit_decomp.ipynb)
+- Generalized Pauli operators, qudit rotation gates, and other multi-qudit gates
 
-### Noise Models
-- Amplitude damping channel for qutrits
+### [Benchmarking Tools](./qdit/benchmarking/)
+- [Efficient n-qudit Clifford circuit generation](./examples/clifford_sampling.ipynb)
+- [Randomized benchmarking for single and multi-qudit systems](./examples/randomized_benchmarking.ipynb)
+
+### [Qudit Circuit Compilation](./qdit/compiling/)
+- [Native gate decomposition](./examples/basic_compiling.ipynb)
+- [Randomized compiling for noise tailoring](./examples/random_compiling.ipynb)
+- [Measurement randomized compiling](./examples/measurement_random_compiling.ipynb)
+- [Transpiling cirq to qcal](./examples/cirq_to_qcal_transpiling.ipynb)
+
+### [Noise Models](./qdit/noise/) (work in progress)
+- [Amplitude damping channel for qutrits](./examples/noise_channels.ipynb)
 - Depolarizing noise
 - Trit-flip channel
-- Random compilation for noise tailoring
-
-### Benchmarking Tools
-- Randomized benchmarking for single and multi-qudit systems
-- Efficient Clifford circuit sampling using tableau simulation
-- Built-in visualization and analysis tools
 
 ## Quick Start
 
@@ -51,56 +55,6 @@ circuits = rb.generate_benchmark_circuits(
 results = rb.simulate_benchmarking(
     depths=[5, 10, 15],
     noise_levels=[0.01, 0.05]
-)
-```
-
-## Example Use Cases
-
-### Randomized Benchmarking
-See `examples/qudit_rb.ipynb` for:
-- Single qutrit benchmarking
-- Multi-qudit systems
-- Noise characterization
-
-### Circuit Compilation
-See `examples/sun_decomp.ipynb` for:
-- SU(N) decomposition into SU(2) gates
-- Random circuit compilation
-- Hardware-efficient gate sequences
-
-### Noise Studies
-See `examples/random_compiling.ipynb` for:
-- Noise tailoring techniques
-- Random compilation methods
-- Error mitigation strategies
-
-### Basic Qutrit Operations
-See `examples/qutrits_in_cirq.ipynb` for:
-- Basic qutrit gate operations
-- Circuit construction
-- Measurement and simulation
-
-## Core Components
-
-### Tableau Simulation
-```python
-from qdit.benchmarking import Tableau
-
-# Generate random 2-qutrit Clifford circuit
-tableau = Tableau(num_qudits=2, dimension=3)
-tableau.populate_and_sweep()
-circuit = tableau.circuit
-```
-
-### Noise Channels
-```python
-from qdit.noise import AmplitudeDamping
-
-# Create qutrit amplitude damping channel
-noise = AmplitudeDamping(
-    gamma_10=0.01,  # |1⟩ → |0⟩ probability
-    gamma_20=0.01,  # |2⟩ → |0⟩ probability
-    gamma_21=0.01   # |2⟩ → |1⟩ probability
 )
 ```
 
