@@ -1,4 +1,4 @@
-# Qdit: Quantum Nanoelectronics Laboratory Library
+# Qdit: QNL's qudit tool shed
 
 Qdit is a Python package for working with qudit (d-dimensional quantum) systems. Built on top of Google's Cirq framework, it provides tools for quantum circuit generation, noise modeling, and randomized benchmarking.
 
